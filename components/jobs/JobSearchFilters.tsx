@@ -14,12 +14,19 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Search, MapPin, Building, Briefcase, X, RotateCcw } from 'lucide-react'
+import { LocationSelect, IndustrySelect } from '@/components/ui/HierarchicalSelect'
 
 interface FilterOptions {
   industries: string[]
   locations: string[]
   remoteTypes: string[]
   jobTypes: string[]
+  hierarchical?: {
+    locationGroups: { tier: string; label: string; cities: string[] }[]
+    industryGroups: { category: string; label: string; industries: string[] }[]
+    remoteWorkTypes: { label: string; value: string }[]
+    jobTypes: { label: string; value: string }[]
+  }
 }
 
 interface SearchFilters {
@@ -48,7 +55,13 @@ export function JobSearchFilters({ onSearch, isLoading }: JobSearchFiltersProps)
     industries: [],
     locations: [],
     remoteTypes: [],
-    jobTypes: []
+    jobTypes: [],
+    hierarchical: {
+      locationGroups: [],
+      industryGroups: [],
+      remoteWorkTypes: [],
+      jobTypes: []
+    }
   })
   
   const [isLoadingOptions, setIsLoadingOptions] = useState(true)
@@ -141,51 +154,71 @@ export function JobSearchFilters({ onSearch, isLoading }: JobSearchFiltersProps)
         {/* Location Filter */}
         <div className="space-y-2">
           <Label>工作地点</Label>
-          <Select 
-            value={filters.location || 'all'} 
-            onValueChange={(value) => handleFilterChange('location', value)}
-            disabled={isLoadingOptions}
-          >
-            <SelectTrigger>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <SelectValue placeholder="选择工作地点" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">所有地点</SelectItem>
-              {filterOptions.locations.map((location) => (
-                <SelectItem key={location} value={location}>
-                  {location}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {filterOptions.hierarchical?.locationGroups.length ? (
+            <LocationSelect
+              locationGroups={filterOptions.hierarchical.locationGroups}
+              value={filters.location ? [filters.location] : []}
+              onValueChange={(value) => handleFilterChange('location', value[0] || '')}
+              disabled={isLoadingOptions}
+              multiple={false}
+            />
+          ) : (
+            <Select 
+              value={filters.location || 'all'} 
+              onValueChange={(value) => handleFilterChange('location', value)}
+              disabled={isLoadingOptions}
+            >
+              <SelectTrigger>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <SelectValue placeholder="选择工作地点" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">所有地点</SelectItem>
+                {filterOptions.locations.map((location) => (
+                  <SelectItem key={location} value={location}>
+                    {location}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         
         {/* Industry Filter */}
         <div className="space-y-2">
           <Label>行业分类</Label>
-          <Select 
-            value={filters.industry || 'all'} 
-            onValueChange={(value) => handleFilterChange('industry', value)}
-            disabled={isLoadingOptions}
-          >
-            <SelectTrigger>
-              <div className="flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                <SelectValue placeholder="选择行业" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">所有行业</SelectItem>
-              {filterOptions.industries.map((industry) => (
-                <SelectItem key={industry} value={industry}>
-                  {industry}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {filterOptions.hierarchical?.industryGroups.length ? (
+            <IndustrySelect
+              industryGroups={filterOptions.hierarchical.industryGroups}
+              value={filters.industry ? [filters.industry] : []}
+              onValueChange={(value) => handleFilterChange('industry', value[0] || '')}
+              disabled={isLoadingOptions}
+              multiple={false}
+            />
+          ) : (
+            <Select 
+              value={filters.industry || 'all'} 
+              onValueChange={(value) => handleFilterChange('industry', value)}
+              disabled={isLoadingOptions}
+            >
+              <SelectTrigger>
+                <div className="flex items-center gap-2">
+                  <Building className="h-4 w-4" />
+                  <SelectValue placeholder="选择行业" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">所有行业</SelectItem>
+                {filterOptions.industries.map((industry) => (
+                  <SelectItem key={industry} value={industry}>
+                    {industry}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         
         {/* Remote Work Filter */}

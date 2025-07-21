@@ -1,5 +1,7 @@
 import { createServerComponentClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { LocationService } from '@/lib/services/locationService'
+import { IndustryService } from '@/lib/services/industryService'
 
 export async function GET() {
   try {
@@ -49,12 +51,33 @@ export async function GET() {
     const uniqueJobTypes = Array.from(
       new Set(jobTypes?.map(item => item.job_type).filter(Boolean))
     ).sort()
+
+    // Create hierarchical data structures
+    const locationGroups = LocationService.groupLocationsByTier(uniqueLocations)
+    const industryGroups = IndustryService.groupIndustriesByCategory(uniqueIndustries)
     
     return NextResponse.json({
+      // Legacy flat arrays for backward compatibility
       industries: uniqueIndustries,
       locations: uniqueLocations,
       remoteTypes: uniqueRemoteTypes,
-      jobTypes: uniqueJobTypes
+      jobTypes: uniqueJobTypes,
+      
+      // New hierarchical structures
+      hierarchical: {
+        locationGroups,
+        industryGroups,
+        remoteWorkTypes: uniqueRemoteTypes.map(type => ({
+          label: type === '远程' ? '远程工作' : 
+                 type === '部分远程' ? '混合办公' : 
+                 type === '不能远程' ? '现场办公' : type,
+          value: type
+        })),
+        jobTypes: uniqueJobTypes.map(type => ({
+          label: type,
+          value: type
+        }))
+      }
     })
   } catch (error) {
     console.error('API error:', error)

@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerComponentClient()
+    const resolvedParams = await params
     
     const { data: job, error } = await supabase
       .from('job_postings')
@@ -33,7 +34,7 @@ export async function GET(
         created_at,
         updated_at
       `)
-      .eq('id', params.id)
+      .eq('id', resolvedParams.id)
       .single()
     
     if (error) {

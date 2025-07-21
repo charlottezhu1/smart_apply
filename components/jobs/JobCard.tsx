@@ -41,6 +41,16 @@ export function JobCard({ job, onViewDetails }: JobCardProps) {
   const getRemoteWorkBadge = (remoteType?: string) => {
     if (!remoteType) return null
     
+    // Handle exact database values
+    if (remoteType === '远程') {
+      return <Badge variant="secondary" className="bg-green-100 text-green-800">远程工作</Badge>
+    } else if (remoteType === '部分远程') {
+      return <Badge variant="secondary" className="bg-blue-100 text-blue-800">混合办公</Badge>
+    } else if (remoteType === '不能远程') {
+      return <Badge variant="outline">现场办公</Badge>
+    }
+    
+    // Legacy support for longer strings
     if (remoteType.includes('远程')) {
       return <Badge variant="secondary" className="bg-green-100 text-green-800">远程工作</Badge>
     } else if (remoteType.includes('部分远程')) {
@@ -48,7 +58,9 @@ export function JobCard({ job, onViewDetails }: JobCardProps) {
     } else if (remoteType.includes('不能远程')) {
       return <Badge variant="outline">现场办公</Badge>
     }
-    return null
+    
+    // Fallback to display original value
+    return <Badge variant="outline">{remoteType}</Badge>
   }
   
   const truncateDescription = (text: string, maxLength: number = 150) => {
